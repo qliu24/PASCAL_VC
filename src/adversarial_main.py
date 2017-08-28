@@ -52,8 +52,8 @@ with tf.device('/cpu:0'):
 
 vgg_var_scope = 'vgg_16'
 with tf.variable_scope(vgg_var_scope, reuse=False):
-    with slim.arg_scope(vgg.vgg_arg_scope()):
-        _, end_points = vgg.vgg_16(input_images)
+    with slim.arg_scope(vgg.vgg_arg_scope(bn=False, is_training=False)):
+        _, end_points = vgg.vgg_16(input_images, is_training=False)
         
 restorer = get_init_restorer()
 config = tf.ConfigProto()

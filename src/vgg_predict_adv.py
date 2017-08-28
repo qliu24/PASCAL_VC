@@ -7,34 +7,31 @@ category = sys.argv[1]
 print(category)
 
 ######### config #############
+adv_file = os.path.join(adv_dir, 'adv_img_{}.pickle'.format(category))
 
-img_dir = Dataset['img_dir'].format(category)
-file_list = Dataset['test_list'].format(category)
+with open(adv_file, 'rb') as fh:
+    _, im_fool_ls = pickle.load(fh)
+
+img_num = len(im_fool_ls)
+print('Total image number for {}: {}'.format(category, img_num))
 
 save_dir = os.path.join(root_dir, 'result_vgg')
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
-save_name = os.path.join(save_dir, 'VGG_predict_{}.pickle'.format(category))
+save_name = os.path.join(save_dir, 'VGG_predict_{}_adv.pickle'.format(category))
 
 classifier = VGG_classifier(model_cache_folder)
 
 ##################### load images
-with open(file_list, 'r') as fh:
-    content = fh.readlines()
-    
-img_list = [cc.strip() for cc in content]
-img_num = len(img_list)
-print('total number of images for {}: {}'.format(category, img_num))
+
 
 pred_rst = [None for nn in range(img_num)]
 for nn in range(img_num):
     if nn%100==0:
         print(nn, end=' ', flush=True)
     
-    file_img = os.path.join(img_dir, '{0}.JPEG'.format(img_list[nn]))
-    assert(os.path.isfile(file_img))
-    im = cv2.imread(file_img)
+    im = im_fool_ls[nn]
     
     pred_rst[nn] = classifier.predict_image(im)[0]
     
@@ -42,7 +39,7 @@ print()
 
 pred_rst = np.array(pred_rst)
 print(pred_rst.shape)
-    
+
 with open(save_name, 'wb') as fh:
     pickle.dump(pred_rst, fh)
     

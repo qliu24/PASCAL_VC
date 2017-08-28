@@ -69,7 +69,7 @@ def eval_VCclassifier(category):
     rst = np.argmax(rst_scores_norm, axis=1)
     accu = np.sum(rst == all_categories.index(category))
     accu = accu/N
-    print('accuracy is: %2.2f'% accu)
+    print('accuracy is: %4.4f'% accu)
     
     
 if __name__=='__main__':

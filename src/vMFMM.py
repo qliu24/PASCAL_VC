@@ -22,7 +22,7 @@ class vMFMM:
         self.tmp_file = os.path.join(tmp_dir, str(date.today())+'.pickle')
         
         
-    def fit(self, features, kappa, max_it=300, tol = 1e-6, normalized=False, verbose=True):
+    def fit(self, features, kappa, max_it=300, tol = 5e-5, normalized=False, verbose=True):
         self.features = features
         if not normalized:
             self.features = normalize_features(features)
@@ -72,6 +72,8 @@ class vMFMM:
             _et = time.time()
             if verbose and itt%1==0:
                 print("iter {0}: {1}, time: {2}".format(itt, self.mllk, (_et-_st)/60))
+                
+            if itt%100==0:
                 with open(self.tmp_file, 'wb') as fh:
                     pickle.dump([self.p, self.mu, self.pi], fh)
                 
