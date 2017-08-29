@@ -35,7 +35,7 @@ for nn in range(img_num):
     
     pred_rst[nn] = classifier.predict_image(im)[0]
     
-print()
+print('')
 
 pred_rst = np.array(pred_rst)
 print(pred_rst.shape)
