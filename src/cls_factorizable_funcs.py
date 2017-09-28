@@ -1,6 +1,6 @@
 import math
 import numpy as np
-def comptScores(inp, obj_weight, logZ):
+def comptScores(inp, obj_weight, logZ, mth):
     hi,wi,ci = inp.shape
     ho,wo,co = obj_weight.shape
     # assert(ci == co)
@@ -30,14 +30,18 @@ def comptScores(inp, obj_weight, logZ):
     
     # term1 = inp*obj_weight
     # score = np.sum(term1) - logZ
-    score = np.dot(inp.ravel().reshape(1,-1),obj_weight.ravel().reshape(-1,1)).squeeze() - np.sum(logZ)
+    if mth=='all':
+        score = np.dot(inp.ravel().reshape(1,-1),obj_weight.ravel().reshape(-1,1)).squeeze() - np.sum(logZ)
+    else:
+        score = np.dot(inp.ravel().reshape(1,-1),(obj_weight-logZ).ravel().reshape(-1,1)).squeeze()
+        
     return score
 
 
-def comptScoresM(inp, all_weights, all_logZs):
+def comptScoresM(inp, all_weights, all_logZs, mth='all'):
     scores_i = []
     for kk in range(len(all_weights)):
-        scores_i.append(comptScores(inp, all_weights[kk].T, all_logZs[kk].T))
+        scores_i.append(comptScores(inp, all_weights[kk].T, all_logZs[kk].T, mth))
         
     return np.max(scores_i)
         

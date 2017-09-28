@@ -19,7 +19,8 @@ class FeatureExtractor:
             self.input_images = tf.placeholder(tf.float32, [self.batch_size, None, None, 3])
         
         if which_net=='vgg16':
-            checkpoints_dir = os.path.join(cache_folder, 'checkpoints_vgg')
+            # checkpoints_dir = os.path.join(cache_folder, 'checkpoints_vgg')
+            checkpoints_dir = os.path.join(cache_folder, 'checkpoints')
             vgg_var_scope = 'vgg_16'
             
             if which_snapshot == 0:  # Start from a pre-trained vgg ckpt

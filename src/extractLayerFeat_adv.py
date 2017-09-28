@@ -3,7 +3,7 @@ from FeatureExtractor import *
 from config_PASCAL_VC import *
 
 def extractLayerFeat_adv(category, extractor, scale_size=224):
-    adv_file = os.path.join(adv_dir, 'adv_img_{}.pickle'.format(category))
+    adv_file = os.path.join(Adv_dir2, 'adv_img_{}.pickle'.format(category))
     
     with open(adv_file, 'rb') as fh:
         _, im_fool_ls = pickle.load(fh)
@@ -25,12 +25,12 @@ def extractLayerFeat_adv(category, extractor, scale_size=224):
         
     print('\n')
     
-    file_cache_feat = os.path.join(Feat['cache_dir'], 'feat_{}_test_adv.pickle'.format(category))
+    file_cache_feat = os.path.join(Feat['cache_dir'], 'feat_{}_test_adv2.pickle'.format(category))
     with open(file_cache_feat, 'wb') as fh:
         pickle.dump(feat_set, fh)
         
             
 if __name__=='__main__':
-    extractor = FeatureExtractor(cache_folder=model_cache_folder, which_net='vgg16', which_layer=VC['layer'], which_snapshot=0)
+    extractor = FeatureExtractor(cache_folder=model_cache_folder_f, which_net='vgg16', which_layer=VC['layer'], which_snapshot=0)
     for category in all_categories:
         extractLayerFeat_adv(category, extractor)

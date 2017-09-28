@@ -28,6 +28,9 @@ if with_noise:
     assert(scale_size==unv_r.shape[0])
     assert(scale_size==unv_r.shape[1])
     assert(unv_r.shape[2]==3)
+    
+else:
+    unv_r=np.zeros((scale_size, scale_size, 3))
 
 ##################### load images
 with open(file_list, 'r') as fh:
@@ -47,16 +50,19 @@ for nn in range(img_num):
     im = cv2.imread(file_img)
     im = im.astype(np.float32)
     assert(scale_size == np.min(im.shape[0:2]))
-    if with_noise:
-        height,width=im.shape[0:2]
-        if height>scale_size:
-            start_h=(height-scale_size)//2
-            im=im[start_h:start_h+scale_size, :, :]
-        else:
-            start_w=(width-scale_size)//2
-            im=im[:, start_w:start_w+scale_size, :]
-            
-        im += unv_r
+    height,width=im.shape[0:2]
+    if height>scale_size:
+        start_w=0
+        start_h=(height-scale_size)//2
+        # im=im[start_h:start_h+scale_size, :, :]
+    else:
+        start_w=(width-scale_size)//2
+        start_h=0
+        # im=im[:, start_w:start_w+scale_size, :]
+
+    # im += unv_r
+    im[start_h:start_h+scale_size, start_w:start_w+scale_size, :] += unv_r
+    im = np.clip(im, 0, 255)
         
     
     pred_rst[nn] = classifier.predict_image(im)[0]

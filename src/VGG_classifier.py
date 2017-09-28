@@ -15,7 +15,7 @@ def get_init_restorer():
     return tf.train.Saver(variables_to_restore)
 
 class VGG_classifier:
-    def __init__(self, cache_folder, batch_size=1):
+    def __init__(self, cache_folder, num_classes=1000, batch_size=1):
         # params
         self.batch_size = batch_size
         self.scale_size = vgg.vgg_16.default_image_size
@@ -25,14 +25,16 @@ class VGG_classifier:
         with tf.device('/cpu:0'):
             self.input_images = tf.placeholder(tf.float32, [self.batch_size, None, None, 3])
         
-        checkpoints_dir = os.path.join(cache_folder, 'checkpoints_vgg')
+        # checkpoints_dir = os.path.join(cache_folder, 'checkpoints_vgg')
+        checkpoints_dir = os.path.join(cache_folder, 'checkpoints')
         vgg_var_scope = 'vgg_16'
 
         with tf.variable_scope(vgg_var_scope, reuse=False):
             with slim.arg_scope(vgg.vgg_arg_scope(bn=False, is_training=False)):
-                _, end_points = vgg.vgg_16(self.input_images, is_training=False)
+                _, end_points = vgg.vgg_16_short(self.input_images, num_classes=num_classes, is_training=False)
                 
-        self.scores = end_points['vgg_16/fc8/reduced']
+        # self.scores = end_points['vgg_16/fc8/reduced']
+        self.scores = end_points['vgg_16/fc6/reduced']
                 
         restorer = get_init_restorer()
         config = tf.ConfigProto()
@@ -40,7 +42,8 @@ class VGG_classifier:
         init_op = tf.global_variables_initializer()
         self.sess = tf.Session(config=config)
         print(str(datetime.now()) + ': Start Init')
-        restorer.restore(self.sess, os.path.join(checkpoints_dir, 'vgg_16.ckpt'))
+        # restorer.restore(self.sess, os.path.join(checkpoints_dir, 'fine_tuned-8000'))
+        restorer.restore(self.sess, os.path.join(checkpoints_dir, 'fine_tuned-20000'))
         print(str(datetime.now()) + ': Finish Init')
         
     

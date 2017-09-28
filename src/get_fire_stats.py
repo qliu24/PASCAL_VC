@@ -9,8 +9,8 @@ def get_fire_stats(category, magic_thh, centers, set_type='train'):
         
     
     N = len(layer_feature)
-    print('{0}: total number of instances {1}'.format(category, N))
-    print(layer_feature[0].shape)
+    # print('{0}: total number of instances {1}'.format(category, N))
+    # print(layer_feature[0].shape)
     
     layer_feature_dist = []
     for nn in range(N):
@@ -43,10 +43,10 @@ if __name__=='__main__':
     cnt_ls = []
     empty_ls = []
     for category in all_categories:
-        cnt, empty = get_fire_stats(category, 0.45, centers,'test')
+        cnt, empty = get_fire_stats(category, 0.45, centers)
         cnt_ls.append(cnt)
         empty_ls.append(empty)
     
-    print('overall:')
+    # print('overall:')
     print('{0}, {1}'.format(np.mean(cnt_ls), np.mean(empty_ls)))
 
