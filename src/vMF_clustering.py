@@ -19,11 +19,17 @@ print('all feat_set')
 feat_set = feat_set.T
 print(feat_set.shape)
 
-model = vMFMM(cluster_num, 'k++', tmp_dir='/export/home/qliu24/tmp/vMFMM/PASCAL/')
+model = vMFMM(cluster_num, 'k++', tmp_dir='/home/qing/tmp/vMFMM/PASCAL3D+')
 model.fit(feat_set, 30, max_it=150)
-
+    
 with open(Dict['Dictionary'], 'wb') as fh:
-    pickle.dump([model.p, model.mu, model.pi], fh)
+    pickle.dump(model.mu, fh)
+
+bins = 4
+per_bin = cluster_num//bins+1
+for bb in range(bins):
+    with open(Dict['Dictionary'].replace('.pickle','_p{}.pickle'.format(bb)), 'wb') as fh:
+        pickle.dump(model.p[:,bb*per_bin:(bb+1)*per_bin], fh)
 
 ############## save examples ###################
 # with open(Dict['file_list'], 'r') as fh:

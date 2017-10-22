@@ -2,7 +2,7 @@ from scipy.spatial.distance import cdist
 from config_PASCAL_VC import *
 
 def get_fire_stats(category, magic_thh, centers, set_type='train'):
-    filename = os.path.join(Feat['cache_dir'], 'feat_{}_{}.pickle'.format(category, set_type))
+    filename = os.path.join(Feat['cache_dir'], 'feat_{}_{}_{}.pickle'.format(category, set_type, VC['layer']))
     
     with open(filename, 'rb') as fh:
         layer_feature = pickle.load(fh)
@@ -15,7 +15,7 @@ def get_fire_stats(category, magic_thh, centers, set_type='train'):
     layer_feature_dist = []
     for nn in range(N):
         iheight,iwidth = layer_feature[nn].shape[0:2]
-        lff = layer_feature[nn].reshape(-1, 512)
+        lff = layer_feature[nn].reshape(-1, featDim)
         lff_norm = lff/np.sqrt(np.sum(lff**2, 1)).reshape(-1,1)
         layer_feature_dist.append(cdist(lff_norm, centers, 'cosine').reshape(iheight,iwidth,-1))
         
@@ -38,12 +38,13 @@ def get_fire_stats(category, magic_thh, centers, set_type='train'):
 
 if __name__=='__main__':
     with open(Dict['Dictionary'], 'rb') as fh:
-        _, centers, _ = pickle.load(fh)
+        # _, centers, _ = pickle.load(fh)
+        centers = pickle.load(fh)
         
     cnt_ls = []
     empty_ls = []
     for category in all_categories:
-        cnt, empty = get_fire_stats(category, 0.45, centers)
+        cnt, empty = get_fire_stats(category, 0.30, centers)
         cnt_ls.append(cnt)
         empty_ls.append(empty)
     

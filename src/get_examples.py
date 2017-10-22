@@ -11,10 +11,19 @@ for ii in range(file_num):
     with open(fname, 'rb') as fh:
         _, iloc, image_path = pickle.load(fh)
         loc_set = np.column_stack((loc_set, iloc.astype('int')))
+        
+print(loc_set.shape)
 
+bins = 2
+per_bin = cluster_num//bins+1
 
-with open(Dict['Dictionary'], 'rb') as fh:
-    model_p, _, _ = pickle.load(fh)
+model_p = np.zeros((loc_set.shape[1], 0))
+for bb in range(bins):
+    with open(Dict['Dictionary'].replace('.pickle','_p{}.pickle'.format(bb)), 'rb') as fh:
+        p_curr = pickle.load(fh)
+        model_p = np.column_stack((model_p, p_curr))
+        
+print(model_p.shape)
 
 ############## save examples ###################
 

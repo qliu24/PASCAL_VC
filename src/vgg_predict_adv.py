@@ -3,13 +3,14 @@ from VGG_classifier import *
 from scipy.misc import logsumexp
 
 # category = sys.argv[1]
-classifier = VGG_classifier(model_cache_folder_f2, num_classes=len(all_categories))
+classifier = VGG_classifier(model_cache_folder_f, num_classes=len(all_categories))
 
-for category in all_categories:
+for category in ['car']:
     print(category)
 
     ######### config #############
-    adv_file = os.path.join(Adv_dir2, 'adv_img_{}.pickle'.format(category))
+    # adv_file = os.path.join(Adv_dir3, 'adv_img_{}.pickle'.format(category))
+    adv_file = '/mnt/1TB_SSD/qing/VC_adv/adv/adv_img_car.pickle'
 
     with open(adv_file, 'rb') as fh:
         _, im_fool_ls = pickle.load(fh)
@@ -17,12 +18,12 @@ for category in all_categories:
     img_num = len(im_fool_ls)
     print('Total image number for {}: {}'.format(category, img_num))
 
-    save_dir = os.path.join(root_dir, 'result_vgg_short')
+    save_dir = os.path.join(root_dir, 'result_vgg_B')
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 
-    save_name = os.path.join(save_dir, 'VGG_predict_{}_adv2.pickle'.format(category))
-
+    # save_name = os.path.join(save_dir, 'VGG_predict_{}_adv3.pickle'.format(category))
+    save_name = os.path.join('/mnt/1TB_SSD/qing/VC_adv/result_vgg', 'VGG_predict_{}_adv.pickle'.format(category))
     ##################### load images
 
 

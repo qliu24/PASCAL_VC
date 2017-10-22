@@ -41,8 +41,8 @@ class vMFMM:
             centers = []
             centers_i = []
             
-            if self.n > 100000:
-                rdn_index = np.random.choice(self.n, size=(100000,), replace=False)
+            if self.n > 50000:
+                rdn_index = np.random.choice(self.n, size=(50000,), replace=False)
             else:
                 rdn_index = np.array(range(self.n), dtype=int)
             
@@ -73,9 +73,15 @@ class vMFMM:
             if verbose and itt%1==0:
                 print("iter {0}: {1}, time: {2}".format(itt, self.mllk, (_et-_st)/60))
                 
-            if itt%100==0:
+            if itt%20==0:
                 with open(self.tmp_file, 'wb') as fh:
-                    pickle.dump([self.p, self.mu, self.pi], fh)
+                    pickle.dump(self.mu, fh)
+                    
+                bins = 4
+                per_bin = self.cls_num//bins+1
+                for bb in range(bins):
+                    with open(self.tmp_file.replace('.pickle','_p{}.pickle'.format(bb)), 'wb') as fh:
+                        pickle.dump(self.p[:,bb*per_bin:(bb+1)*per_bin], fh)
                 
             self.mllk_rec.append(self.mllk)
             if len(self.mllk_rec)>1 and self.mllk - self.mllk_rec[-2] < tol:

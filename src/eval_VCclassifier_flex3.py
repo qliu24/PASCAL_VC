@@ -11,7 +11,7 @@ def eval_VCclassifier(category):
     print('class : {}'.format(category))
 
     # load test feat
-    test_feat = os.path.join(Feat['cache_dir'], 'feat_{}_occ_9.pickle'.format(category))
+    test_feat = os.path.join(Feat['cache_dir'], 'feat_{}_test_pool3.pickle'.format(category))
     with open(test_feat,'rb') as fh:
         layer_feature = pickle.load(fh)
 
@@ -21,7 +21,9 @@ def eval_VCclassifier(category):
     # convert to 0-1 VC encoding
 
     with open(Dict['Dictionary'], 'rb') as fh:
-        _, centers, _ = pickle.load(fh)
+        centers = pickle.load(fh)
+        if len(centers)==3:
+            centers = centers[1]
 
     r_set = [None for nn in range(N)]
     for nn in range(N):
@@ -55,7 +57,7 @@ def eval_VCclassifier(category):
     rst_scores_norm = np.zeros((N, total_models))
     for model_idx in range(total_models):
         print('model {}:'.format(model_idx), end=' ', flush=True)
-        model_file = os.path.join(Model_dir, 'mmodel_{}_K{}_notrain_flex.pickle'.format(all_categories[model_idx], K))
+        model_file = os.path.join(Model_dir, 'mmodel_{}_K{}_notrain_flex_pool3.pickle'.format(all_categories[model_idx], K))
         assert(os.path.exists(model_file))
         with open(model_file,'rb') as fh:
             all_weights, _ = pickle.load(fh)
@@ -87,5 +89,5 @@ def eval_VCclassifier(category):
     
     
 if __name__=='__main__':
-    for category in all_categories2:
+    for category in all_categories:
         eval_VCclassifier(category)

@@ -9,35 +9,34 @@ np.random.seed(0)
 
 img_per_cat = 1000
 check_num = 1000  # save how many images to one file
-samp_size = 50  # number of features per image
+samp_size = 200  # number of features per image
 scale_size = 224
 
 # Specify the dataset
-# image_path = []
-# for category in all_categories:
-#     img_dir = Dataset['img_dir'].format(category)
+image_path = []
+for category in all_categories:
+    img_dir = Dataset['img_dir'].format(category)
     
-#     filelist1 = Dataset['train_list'].format(category)
-#     filelist2 = Dataset['test_list'].format(category)
-#     contents=[]
-#     with open(filelist1, 'r') as fh:
-#         contents += fh.readlines()
+    filelist1 = Dataset['train_list'].format(category)
+    filelist2 = Dataset['test_list'].format(category)
+    contents=[]
+    with open(filelist1, 'r') as fh:
+        contents += fh.readlines()
         
-#     with open(filelist2, 'r') as fh:
-#         contents += fh.readlines()
+    with open(filelist2, 'r') as fh:
+        contents += fh.readlines()
         
-#     if category=='motorbike':
-#         print('total number of images for {}: {}'.format(category, len(contents)))
-#         del(contents[19])
+    if category=='motorbike':
+        del(contents[19])
     
-#     print('total number of images for {}: {}'.format(category, len(contents)))
+    print('total number of images for {}: {}'.format(category, len(contents)))
     
-#     idx_s = np.random.permutation(len(contents))[0:img_per_cat]
-#     image_path += [os.path.join(img_dir, '{}.JPEG'.format(contents[nn].strip())) for nn in idx_s]
+    idx_s = np.random.permutation(len(contents))[0:img_per_cat]
+    image_path += [os.path.join(img_dir, '{}.JPEG'.format(contents[nn].strip())) for nn in idx_s]
 
-ff = Dict['cache_path']+'0.pickle'
-with open(ff, 'rb') as fh:
-    _,_,image_path = pickle.load(fh)
+# ff = Dict['cache_path']+'0.pickle'
+# with open(ff, 'rb') as fh:
+#     _,_,image_path = pickle.load(fh)
     
 img_num = len(image_path)
 print('total number of images for all: {}'.format(img_num))
@@ -47,7 +46,7 @@ extractor = FeatureExtractor(cache_folder=model_cache_folder, which_net='vgg16',
 res = np.zeros((featDim, 0))
 loc_set = np.zeros((5, 0))
 
-for ii in range(5000,img_num):
+for ii in range(img_num):
     assert(os.path.exists(image_path[ii]))
     img = cv2.imread(image_path[ii])
     # img = cv2.resize(img, (scale_size, scale_size))

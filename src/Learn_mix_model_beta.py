@@ -1,13 +1,16 @@
 from config_PASCAL_VC import *
 from sklearn.cluster import SpectralClustering
 from scipy.spatial.distance import cdist
+from scipy.stats import beta
 
-
-def learn_mix_model_flex(categroy, centers, magic_thh, K=4):
+def learn_mix_model_beta(categroy, K=4, kappa=5):
+    
+    with open(Dict['Dictionary'], 'rb') as fh:
+        _, centers, _ = pickle.load(fh)
     
     sim_fname = os.path.join(Feat['cache_dir'],'simmat','simmat_mthrh045_{}.pickle'.format(category))
-    feat_fname = os.path.join(Feat['cache_dir'], 'feat_{}_train_{}.pickle'.format(category, VC['layer']))
-    savename = os.path.join(root_dir,'mix_model','mmodel_{}_K{}_notrain_flex_{}.pickle'.format(category, K, VC['layer']))
+    feat_fname = os.path.join(Feat['cache_dir'], 'feat_{}_train.pickle'.format(category))
+    savename = os.path.join(root_dir,'mix_model','mmodel_{}_K{}_notrain_beta.pickle'.format(category, K))
 
     # Spectral clustering based on the similarity matrix
     with open(sim_fname, 'rb') as fh:
@@ -50,6 +53,8 @@ def learn_mix_model_flex(categroy, centers, magic_thh, K=4):
     rst_lbs[idx2[1]] = rst_lbs2
     rst_lbs = rst_lbs.astype('int')
     
+    del(mat_dis)
+    
     for kk in range(K):
         print('cluster {} has {} samples'.format(kk, np.sum(rst_lbs==kk)))
 
@@ -65,67 +70,52 @@ def learn_mix_model_flex(categroy, centers, magic_thh, K=4):
         lff = layer_feature[nn].reshape(-1, featDim)
         lff_norm = lff/np.sqrt(np.sum(lff**2, 1)).reshape(-1,1)
         r_set[nn] = cdist(lff_norm, centers, 'cosine').reshape(iheight,iwidth,-1)
-        
-    layer_feature_b = [None for nn in range(N)]
+
+    # transfer from distance space to firing rate space, center crop
+    layer_feature_fr = [None for nn in range(N)]
     for nn in range(N):
-        layer_feature_b[nn] = (r_set[nn]<magic_thh).astype(int).T
+        hnn,wnn = r_set[nn].shape[0:2]
+        if hnn>14:
+            marg = (hnn-14)//2
+            r_set[nn] = r_set[nn][marg:marg+14, :, :]
+        elif wnn>14:
+            marg = (wnn-14)//2
+            r_set[nn] = r_set[nn][:, marg:marg+14, :]
+            
+        layer_feature_fr[nn] = np.exp(-kappa*r_set[nn])
 
-    # Compute the unary weights
-    # VC num
-    max_0 = max([layer_feature_b[nn].shape[0] for nn in range(N)])
-    # width
-    max_1 = max([layer_feature_b[nn].shape[1] for nn in range(N)])
-    # height
-    max_2 = max([layer_feature_b[nn].shape[2] for nn in range(N)])
-    print(max_0, max_1, max_2)
+    del(layer_feature)
+    del(r_set)
 
-    all_train = [np.zeros((max_0, max_1, max_2)) for kk in range(K)]
-    all_N = [0 for kk in range(K)]
+    all_train = [[] for kk in range(K)]
     for nn in range(N):
         if nn%100==0:
             print(nn, end=' ', flush=True)
 
-        vnum, ww, hh = layer_feature_b[nn].shape
-        assert(vnum == max_0)
-        diff_w1 = int((max_1-ww)/2)
-        diff_w2 = int(max_1-ww-diff_w1)
-        assert(max_1 == diff_w1+diff_w2+ww)
-
-        diff_h1 = int((max_2-hh)/2)
-        diff_h2 = int(max_2-hh-diff_h1)
-        assert(max_2 == diff_h1+diff_h2+hh)
-
-        padded = np.pad(layer_feature_b[nn], ((0,0),(diff_w1, diff_w2),(diff_h1, diff_h2)), 'constant', constant_values=0)
-        ki = rst_lbs[nn]
-        all_train[ki] += padded
-        all_N[ki] += 1
+        all_train[rst_lbs[nn]].append(layer_feature_fr[nn].ravel())
 
     print('')
 
-    assert(N == np.sum(all_N))
-    all_weights = [None for kk in range(K)]
+    
+    all_alphas = [None for kk in range(K)]
+    all_betas = [None for kk in range(K)]
+    all_N = [0 for kk in range(K)]
     for kk in range(K):
-        probs = all_train[kk]/all_N[kk] + 1e-3
-        all_weights[kk] = np.log(probs/(1.-probs))
-
+        data_kk = np.array(all_train[kk])
+        all_alphas[kk] = np.zeros(data_kk.shape[1])
+        all_betas[kk] = np.zeros(data_kk.shape[1])
+        for dd in range(data_kk.shape[1]):
+            all_alphas[kk][dd], all_betas[kk][dd],_,_ = beta.fit(data_kk[:,dd])
+            
+        all_N[kk] = data_kk.shape[0]
+        
+    assert(N == np.sum(all_N))
     all_priors = np.array(all_N)/N
 
     with open(savename, 'wb') as fh:
-        pickle.dump([all_weights, all_priors], fh)
+        pickle.dump([all_alphas, all_betas, all_priors], fh)
             
 
 if __name__=='__main__':
-        
-    thh_file = os.path.join(Model_dir,'magic_thh_train_pool3.pickle')
-    with open(thh_file, 'rb') as fh:
-        thh_ls = pickle.load(fh)
-        
-    
-    with open(Dict['Dictionary'], 'rb') as fh:
-        centers = pickle.load(fh)
-        
-        if len(centers)==3:
-            centers = centers[1]
-    
-    for ic,category in enumerate(all_categories):
-        learn_mix_model_flex(category, centers, thh_ls[ic])
+    for category in all_categories:
+        learn_mix_model_beta(category)

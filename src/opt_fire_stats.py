@@ -2,11 +2,11 @@ from scipy.spatial.distance import cdist
 from config_PASCAL_VC import *
 
 def opt_fire_stats(category, centers, set_type):
-    magic_thh_ls = [0.35]
+    magic_thh_ls = [0.25]
     step = 0.05
-    print('optimizing magic threshold for category {}, set_type {}'.format(category, set_type))
+    print('optimizing magic threshold for category {}, set_type {}, layer {}'.format(category, set_type, VC['layer']))
     if category in all_categories:
-        filename = os.path.join(Feat['cache_dir'], 'feat_{}_{}.pickle'.format(category, set_type))
+        filename = os.path.join(Feat['cache_dir'], 'feat_{}_{}_{}.pickle'.format(category, set_type, VC['layer']))
         
         with open(filename, 'rb') as fh:
             layer_feature = pickle.load(fh)
@@ -29,7 +29,7 @@ def opt_fire_stats(category, centers, set_type):
     layer_feature_dist = []
     for nn in range(N):
         iheight,iwidth = layer_feature[nn].shape[0:2]
-        lff = layer_feature[nn].reshape(-1, 512)
+        lff = layer_feature[nn].reshape(-1, featDim)
         lff_norm = lff/np.sqrt(np.sum(lff**2, 1)).reshape(-1,1)
         layer_feature_dist.append(cdist(lff_norm, centers, 'cosine').reshape(iheight,iwidth,-1))
         
@@ -75,10 +75,13 @@ def opt_fire_stats(category, centers, set_type):
 
 if __name__=='__main__':
     with open(Dict['Dictionary'], 'rb') as fh:
-        _, centers, _=pickle.load(fh)
+        centers=pickle.load(fh)
+        
+        if len(centers)==3:
+            centers = centers[1]
     
-    set_type= 'test'
-    per_category = False
+    set_type= 'train'
+    per_category = True
     
     if per_category:
         rst_ls = []
@@ -88,7 +91,7 @@ if __name__=='__main__':
     else:
         rst_ls = opt_fire_stats('all', centers, set_type) # scalar
         
-    save_file = os.path.join(Model_dir,'magic_thh_{}.pickle'.format(set_type))
+    save_file = os.path.join(Model_dir,'magic_thh_{}_{}.pickle'.format(set_type, VC['layer']))
     if not per_category:
         save_file = os.path.join(Model_dir,'magic_thh_{}_all.pickle'.format(set_type))
         

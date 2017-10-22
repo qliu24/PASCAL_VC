@@ -31,10 +31,10 @@ class VGG_classifier:
 
         with tf.variable_scope(vgg_var_scope, reuse=False):
             with slim.arg_scope(vgg.vgg_arg_scope(bn=False, is_training=False)):
-                _, end_points = vgg.vgg_16_short(self.input_images, num_classes=num_classes, is_training=False)
+                _, end_points = vgg.vgg_16(self.input_images, num_classes=num_classes, is_training=False)
                 
-        # self.scores = end_points['vgg_16/fc8/reduced']
-        self.scores = end_points['vgg_16/fc6/reduced']
+        self.scores = end_points['vgg_16/fc8/reduced']
+        # self.scores = end_points['vgg_16/fc6/reduced']
                 
         restorer = get_init_restorer()
         config = tf.ConfigProto()
@@ -42,8 +42,9 @@ class VGG_classifier:
         init_op = tf.global_variables_initializer()
         self.sess = tf.Session(config=config)
         print(str(datetime.now()) + ': Start Init')
-        # restorer.restore(self.sess, os.path.join(checkpoints_dir, 'fine_tuned-8000'))
-        restorer.restore(self.sess, os.path.join(checkpoints_dir, 'fine_tuned-20000'))
+        restorer.restore(self.sess, os.path.join(checkpoints_dir, 'fine_tuned-8000'))
+        # restorer.restore(self.sess, os.path.join(checkpoints_dir, 'fine_tuned-20000'))
+        # restorer.restore(self.sess, os.path.join(checkpoints_dir, 'fine_tuned-22000'))
         print(str(datetime.now()) + ': Finish Init')
         
     

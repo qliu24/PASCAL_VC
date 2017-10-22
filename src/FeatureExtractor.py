@@ -5,13 +5,14 @@ import tensorflow.contrib.slim as slim
 from datetime import datetime
 import network as vgg
 import os
+import pickle
 
 class FeatureExtractor:
     def __init__(self, cache_folder, which_net, which_layer, which_snapshot, batch_size=1, from_scratch=False):
         # params
         self.batch_size = batch_size
         self.scale_size = vgg.vgg_16.default_image_size
-        self.img_mean = np.array([104., 117., 124.])
+        self.img_mean = np.array([103.939, 116.779, 123.68])
 
         # Runtime params
         self.net_type = which_net
@@ -19,14 +20,14 @@ class FeatureExtractor:
             self.input_images = tf.placeholder(tf.float32, [self.batch_size, None, None, 3])
         
         if which_net=='vgg16':
-            # checkpoints_dir = os.path.join(cache_folder, 'checkpoints_vgg')
-            checkpoints_dir = os.path.join(cache_folder, 'checkpoints')
+            checkpoints_dir = os.path.join(cache_folder, 'checkpoints_vgg')
+            # checkpoints_dir = os.path.join(cache_folder, 'checkpoints')
             vgg_var_scope = 'vgg_16'
             
             if which_snapshot == 0:  # Start from a pre-trained vgg ckpt
                 with tf.variable_scope(vgg_var_scope, reuse=False):
                     with slim.arg_scope(vgg.vgg_arg_scope(bn=False, is_training=False)):
-                        _, _ = vgg.vgg_16(self.input_images, is_training=False)
+                        _, _ = vgg.vgg_16_pool4(self.input_images, is_training=False)
                     
                 self.features = tf.get_default_graph().get_tensor_by_name(vgg_var_scope + '/' + which_layer + '/MaxPool:0')
                 
@@ -81,6 +82,13 @@ class FeatureExtractor:
             return 0
         
         print(str(datetime.now()) + ': Finish Init')
+        for vv in tf.trainable_variables():
+            if vv.name == 'vgg_16/conv1/conv1_1/weights:0':
+                conv11w = self.sess.run(vv)
+            elif vv.name == 'vgg_16/conv1/conv1_1/biases:0':
+                conv11b = self.sess.run(vv)
+                
+        pickle.dump([conv11w, conv11b], open('/home/qing/Downloads/conv11.pickle','wb'))
         
         
     def extract_feature_file(self, file_path, is_gray=False):
@@ -126,6 +134,21 @@ class FeatureExtractor:
             
         feed_dict = {self.input_images: [img]}
         out_features = self.sess.run(self.features, feed_dict=feed_dict)
+        return out_features
+    
+    def extract_feature_image_all(self, img):
+        vgg_var_scope = 'vgg_16'
+        
+        features1 = tf.get_default_graph().get_tensor_by_name(vgg_var_scope + '/pool1/MaxPool:0')
+        features2 = tf.get_default_graph().get_tensor_by_name(vgg_var_scope + '/pool2/MaxPool:0')
+        features3 = tf.get_default_graph().get_tensor_by_name(vgg_var_scope + '/pool3/MaxPool:0')
+        features4 = tf.get_default_graph().get_tensor_by_name(vgg_var_scope + '/pool4/MaxPool:0')
+        f_list=[self.input_images, features1,features2,features3,features4]
+        
+        img = img.astype(np.float32)
+        img -= self.img_mean
+        feed_dict = {self.input_images: [img]}
+        out_features = self.sess.run(f_list, feed_dict=feed_dict)
         return out_features
     
     

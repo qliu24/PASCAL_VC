@@ -1,5 +1,7 @@
 import math
 import numpy as np
+from scipy.stats import norm
+
 def comptScores(inp, obj_weight, logZ, mth):
     hi,wi,ci = inp.shape
     ho,wo,co = obj_weight.shape
@@ -51,5 +53,20 @@ def predictLabel(inp, all_weights1, all_logZs1, all_weights2, all_logZs2):
     score2 = comptScoresM(inp, all_weights2, all_logZs2)
     
     return int(score2>score1), score1-score2
+
+
+def comptGaussScores(inp, mu, sigma, term1):
+    xx = inp.ravel()
+    score = -np.absolute(xx-mu)
+    return np.sum(score)
+
+
+
+def comptGaussScoresM(inp, all_mus, all_sigmas, term1s):
+    scores_i = []
+    for kk in range(len(all_mus)):
+        scores_i.append(comptGaussScores(inp, all_mus[kk], all_sigmas[kk], term1s[kk]))
+        
+    return np.max(scores_i)
 
 
