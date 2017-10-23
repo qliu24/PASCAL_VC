@@ -6,7 +6,7 @@ def opt_fire_stats(category, centers, set_type):
     step = 0.05
     print('optimizing magic threshold for category {}, set_type {}, layer {}'.format(category, set_type, VC['layer']))
     if category in all_categories:
-        filename = os.path.join(Feat['cache_dir'], 'feat_{}_{}_{}.pickle'.format(category, set_type, VC['layer']))
+        filename = os.path.join(Feat['cache_dir'], 'cropped', 'feat_{}_{}_{}.pickle'.format(category, set_type, VC['layer']))
         
         with open(filename, 'rb') as fh:
             layer_feature = pickle.load(fh)

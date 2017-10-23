@@ -50,6 +50,6 @@ def extractLayerFeat(category, extractor, scale_size=224, set_type='train', cent
         
             
 if __name__=='__main__':
-    extractor = FeatureExtractor(cache_folder=model_cache_folder, which_net='vgg16', which_layer=VC['layer'], which_snapshot=0)
+    extractor = FeatureExtractor(cache_folder=model_cache_folder_f, which_net='vgg16', which_layer=VC['layer'], which_snapshot=0)
     for category in all_categories:
-        extractLayerFeat(category, extractor, set_type='test')
+        extractLayerFeat(category, extractor, set_type='train')

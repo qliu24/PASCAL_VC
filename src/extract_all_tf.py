@@ -9,7 +9,7 @@ np.random.seed(0)
 
 img_per_cat = 1000
 check_num = 1000  # save how many images to one file
-samp_size = 200  # number of features per image
+samp_size = 50  # number of features per image
 scale_size = 224
 
 # Specify the dataset
@@ -41,7 +41,7 @@ for category in all_categories:
 img_num = len(image_path)
 print('total number of images for all: {}'.format(img_num))
 
-extractor = FeatureExtractor(cache_folder=model_cache_folder, which_net='vgg16', which_layer=VC['layer'], which_snapshot=0)
+extractor = FeatureExtractor(cache_folder=model_cache_folder_f, which_net='vgg16', which_layer=VC['layer'], which_snapshot=0)
 
 res = np.zeros((featDim, 0))
 loc_set = np.zeros((5, 0))

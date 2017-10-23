@@ -12,7 +12,7 @@ class FeatureExtractor:
         # params
         self.batch_size = batch_size
         self.scale_size = vgg.vgg_16.default_image_size
-        self.img_mean = np.array([103.939, 116.779, 123.68])
+        self.img_mean = np.array([123.68, 116.779, 103.939]) # RGB
 
         # Runtime params
         self.net_type = which_net
@@ -20,8 +20,8 @@ class FeatureExtractor:
             self.input_images = tf.placeholder(tf.float32, [self.batch_size, None, None, 3])
         
         if which_net=='vgg16':
-            checkpoints_dir = os.path.join(cache_folder, 'checkpoints_vgg')
-            # checkpoints_dir = os.path.join(cache_folder, 'checkpoints')
+            # checkpoints_dir = os.path.join(cache_folder, 'checkpoints_vgg')
+            checkpoints_dir = os.path.join(cache_folder, 'checkpoints')
             vgg_var_scope = 'vgg_16'
             
             if which_snapshot == 0:  # Start from a pre-trained vgg ckpt
@@ -91,32 +91,32 @@ class FeatureExtractor:
         pickle.dump([conv11w, conv11b], open('/home/qing/Downloads/conv11.pickle','wb'))
         
         
-    def extract_feature_file(self, file_path, is_gray=False):
-        if isinstance(file_path, (list, tuple)):
-            assert(self.batch_size == len(file_path))
-        else:
-            assert(isinstance(file_path, str))
-            assert(self.batch_size == 1)
-            file_path = [file_path]
+#     def extract_feature_file(self, file_path, is_gray=False):
+#         if isinstance(file_path, (list, tuple)):
+#             assert(self.batch_size == len(file_path))
+#         else:
+#             assert(isinstance(file_path, str))
+#             assert(self.batch_size == 1)
+#             file_path = [file_path]
             
-        batch_images = np.ndarray([self.batch_size, self.scale_size, self.scale_size, 3])
-        for ii in range(self.batch_size):
-            img = cv2.imread(file_path[ii])
-            h, w, c = img.shape
-            assert c == 3
-            if is_gray:
-                gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-                img = cv2.cvtColor(gray,cv2.COLOR_GRAY2RGB)
+#         batch_images = np.ndarray([self.batch_size, self.scale_size, self.scale_size, 3])
+#         for ii in range(self.batch_size):
+#             img = cv2.imread(file_path[ii])
+#             h, w, c = img.shape
+#             assert c == 3
+#             if is_gray:
+#                 gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+#                 img = cv2.cvtColor(gray,cv2.COLOR_GRAY2RGB)
                 
-            img = cv2.resize(img, (self.scale_size, self.scale_size))
-            img = img.astype(np.float32)
-            img -= self.img_mean
-            batch_images[ii] = img
+#             img = cv2.resize(img, (self.scale_size, self.scale_size))
+#             img = img.astype(np.float32)
+#             img -= self.img_mean
+#             batch_images[ii] = img
             
-        print('feed network')
-        feed_dict = {self.input_images: batch_images}
-        feature_list = self.sess.run(self.features, feed_dict=feed_dict)
-        return feature_list
+#         print('feed network')
+#         feed_dict = {self.input_images: batch_images}
+#         feature_list = self.sess.run(self.features, feed_dict=feed_dict)
+#         return feature_list
     
     
     def extract_feature_image(self, img, is_gray=False):
@@ -126,6 +126,8 @@ class FeatureExtractor:
         if is_gray:
             gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
             img = cv2.cvtColor(gray,cv2.COLOR_GRAY2RGB)
+        else:
+            img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
             
         # img = cv2.resize(img, (self.scale_size, self.scale_size))
         
